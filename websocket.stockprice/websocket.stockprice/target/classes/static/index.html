@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stock Price Viewer</title>
+    <script>
+        let socket;
+
+        function connect() {
+            const username = document.getElementById("username").value;
+            const stockSymbol = document.getElementById("stockSymbol").value;
+
+            // Create a new WebSocket connection
+            socket = new WebSocket("ws://localhost:8080/stock-price");
+
+            // Event handler for when the connection is opened
+            socket.onopen = function(event) {
+                console.log("Connected to WebSocket server");
+                // Subscribe to the stock
+                socket.send(`subscribe:${stockSymbol}:${username}`);
+            };
+
+            // Event handler for receiving messages
+            socket.onmessage = function(event) {
+                const message = event.data;
+                console.log("Received message:", message);
+                document.getElementById("messages").innerHTML += `<p>${message}</p>`;
+            };
+
+            // Event handler for errors
+            socket.onerror = function(error) {
+                console.error("WebSocket error:", error);
+            };
+
+            // Event handler for when the connection is closed
+            socket.onclose = function(event) {
+                console.log("WebSocket connection closed");
+            };
+        }
+    </script>
+</head>
+<body>
+    <h1>Live Stock Price Viewer</h1>
+
+    <h2>Enter Username and Stock Symbol</h2>
+    <label for="username">Username:</label>
+    <input type="text" id="username" placeholder="Enter your username" required>
+    <br>
+    <label for="stockSymbol">Stock Symbol:</label>
+    <input type="text" id="stockSymbol" placeholder="Enter stock symbol (e.g., AAPL)" required>
+    <br>
+    <button onclick="connect()">Subscribe</button>
+
+    <h2>Live Stock Prices:</h2>
+    <div id="messages"></div>
+</body>
+</html>
